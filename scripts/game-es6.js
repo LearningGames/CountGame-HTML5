@@ -9,9 +9,7 @@ class NumberedBox extends createjs.Container {
 		//When we add this container to the stage the graphics will be displayed
 		this.addChild(movieclip);
 
-		//random position
-		movieclip.x = Math.random() * 200;
-		movieclip.y = Math.random() * 200;
+		this.setBounds(0,50,50);
 	}
 }
 
@@ -22,17 +20,31 @@ class Game {
     this.canvas = document.getElementById("game-canvas");
     this.stage = new createjs.Stage(this.canvas);
 
+    //aliases the canvas with the stage object
+    this.stage.width = this.canvas.width;
+    this.stage.height = this.canvas.height;
+
     createjs.Ticker.setFPS(60);
 
     //this keeps redrawing the stage
     createjs.Ticker.on("tick", this.stage);
 
-    //adding NumberedBox to the stage
-    this.stage.addChild(new NumberedBox(88));
+    //adding NumberedBoxes to the stage
+    this.generateBoxes(10);
   }
 
   version() {
     return '1.0.0';
+  }
+
+  generateBoxes(amount=10) {
+  	for (var i = amount; i > 0; --i) {
+  		var movieclip = new NumberedBox(i);
+  		this.stage.addChild(movieclip);
+  		//random position but we dont want to put it at the edges
+		movieclip.x = Math.random() * (this.stage.width - movieclip.getBounds().width);
+		movieclip.y = Math.random() * (this.stage.height - movieclip.getBounds().height);
+  	}
   }
 }
 
