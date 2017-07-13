@@ -1,7 +1,10 @@
 //Container is an object to contain graphics
 class NumberedBox extends createjs.Container {
-	constructor(number=0) {
+	constructor(game, number=0) {
 		super();
+
+		//we need the game instance to handle the click
+		this.game = game;
 
 		//lib is defined in the imported file: count-game-graphics.js
 		var movieclip = new lib.NumberedBox();
@@ -10,6 +13,13 @@ class NumberedBox extends createjs.Container {
 		this.addChild(movieclip);
 
 		this.setBounds(0,50,50);
+
+		//handle click/tap
+		this.on('click', this.handleClick.bind(this));
+	}
+
+	handleClick() {
+		this.game.handleClick(this);
 	}
 }
 
@@ -20,9 +30,10 @@ class Game {
     this.canvas = document.getElementById("game-canvas");
     this.stage = new createjs.Stage(this.canvas);
 
-    //aliases the canvas with the stage object
-    this.stage.width = this.canvas.width;
-    this.stage.height = this.canvas.height;
+    //enable touch devices
+    createjs.Touch.enable(this.stage);
+
+    this.retinalize();
 
     createjs.Ticker.setFPS(60);
 
@@ -39,12 +50,37 @@ class Game {
 
   generateBoxes(amount=10) {
   	for (var i = amount; i > 0; --i) {
-  		var movieclip = new NumberedBox(i);
+  		//this has the Game instance
+  		var movieclip = new NumberedBox(this, i);
   		this.stage.addChild(movieclip);
   		//random position but we dont want to put it at the edges
 		movieclip.x = Math.random() * (this.stage.width - movieclip.getBounds().width);
 		movieclip.y = Math.random() * (this.stage.height - movieclip.getBounds().height);
   	}
+  }
+
+  handleClick(numberedBox) {
+  	this.stage.removeChild(numberedBox);
+
+  	let ratio = window.devicePixelRatio;
+  	if (ratio === undefined) {
+  		return;
+  	}
+
+  	this.canvas.setAttribute('width', Math.round(this.stage.width * ratio));
+  	this.canvas.setAttribute('height', Math.round(this.stage.height * ratio));
+
+  	this.stage.scaleX = this.stage.scaleY = ratio;
+
+  	//Set CSS
+  	this.canvas.style.width = this.stage.width + "px";
+  	this.canvas.style.height = this.stage.height + "px";
+  }
+
+  retinalize() {
+  	//aliases the canvas with the stage object
+    this.stage.width = this.canvas.width;
+    this.stage.height = this.canvas.height;
   }
 }
 
